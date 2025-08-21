@@ -1,4 +1,4 @@
-win: main.cpp
+default: main.cpp
 	g++ main.cpp -o main.exe -O2 -std=gnu++23 -IC:/raylib/raylib/src -LC:/raylib/raylib/src -lraylib -lwinmm -lgdi32 -lopengl32 -mwindows
 	./main.exe
 
