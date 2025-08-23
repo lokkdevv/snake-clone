@@ -1,9 +1,8 @@
-default: main.cpp
-	g++ main.cpp -o main.exe -O2 -std=gnu++23 -IC:/raylib/raylib/src -LC:/raylib/raylib/src -lraylib -lwinmm -lgdi32 -lopengl32 -mwindows
-	./main.exe
+default:
+	g++ src/main.cpp -o build/main.exe -O2 -std=gnu++23 -Ilibs/raylib -Llibs/raylib -lraylib -lwinmm -lgdi32 -lopengl32 -mwindows
 
-web: main.cpp
-	em++ main.cpp -o index.html --shell-file html_template/template.html -s USE_GLFW=3 -s ASYNCIFY -s FORCE_FILESYSTEM=1 -IC:/raylib/raylib/src -LC:/raylib/raylib/src/web -lraylib
+web:
+	em++ src/main.cpp -o build/web/index.html --shell-file html_template/template.html -s USE_GLFW=3 -s ASYNCIFY -s FORCE_FILESYSTEM=1 -Ilibs/raylib -Llibs/raylib/web -lraylib
 
 clean:
 	del main.exe
