@@ -1,63 +1,167 @@
 #include <raylib.h>
 #include <vector>
-#include <array>
-#include <iostream>
-#include <thread>
-#include <chrono>
+#include <random>
 
-constexpr int MAX_TILES = 500; //20 * 25
+const int screenWidth = 800;
+const int screenHeight = 800;
+const int gridSize = 32;
+const int gridWidth = screenWidth / gridSize;
+const int gridHeight = screenHeight / gridSize;
 
-constexpr int screenHeight = 640; //32 * 20
-constexpr int screenWidth = 800; //32 * 25
+const float moveInterval = 0.15f;
 
-int main()
-{
-	InitWindow(screenWidth, screenHeight, "snake");
-	SetTargetFPS(60);
+enum Direction { UP, RIGHT, DOWN, LEFT };
 
-	std::array<int, MAX_TILES> tileState;
+int main() {
+    InitWindow(screenWidth, screenHeight, "Snake Game");
+    SetTargetFPS(60);
 
-	/*
-	for(auto i : mapTiles)
-	{
-		std::cout << i.x << ',' << i.y << '\n';
-	}
-	*/
+    std::vector<Vector2> snakeBody;
 
-	Vector2 snakeSize = {32, 32};
-	Vector2 snakePos = {0, 0};
-	Vector2 snakeDir = {0, 0};
+    Direction snakeDirection = RIGHT;
 
-	while(!WindowShouldClose())
-	{
-		////////////////////////////////INPUT////////////////////////////////
-		if((snakeDir.x == 1 || snakeDir.x == -1) && (IsKeyDown(KEY_W) || IsKeyDown(KEY_S))) snakeDir.x = 0;
-		
-		if(IsKeyDown(KEY_A) && snakeDir.x != 1.f) snakeDir.x = -1;
-		if(IsKeyDown(KEY_D) && snakeDir.x != -1.f) snakeDir.x = 1;
-		
-		if((snakeDir.y == 1 || snakeDir.y == -1) && (IsKeyDown(KEY_A) || IsKeyDown(KEY_D))) snakeDir.y = 0;
-		
-		if(IsKeyDown(KEY_W) && snakeDir.y != 1.f) snakeDir.y = -1;
-		if(IsKeyDown(KEY_S) && snakeDir.y != -1.f) snakeDir.y = 1;
+    Direction nextDirection = RIGHT;
 
-		///////////////////////////////UPDATE////////////////////////////////
-		for(int i = 0; i < MAX_TILES; i++)
-		{
-			i++;
-		}
+    bool shouldGrow = false;
 
-		std::this_thread::sleep_for(std::chrono::milliseconds(70));
+    bool gameOver = false;
 
-		snakePos.x += snakeDir.x * 32;
-		snakePos.y += snakeDir.y * 32;
+    int score = 0;
 
-		////////////////////////////////DRAW/////////////////////////////////
-		BeginDrawing();
-		ClearBackground(RAYWHITE);
-		DrawRectangle(snakePos.x, snakePos.y, snakeSize.x, snakeSize.y, RED);
-		EndDrawing();
-	}
+    float moveTimer = 0.0f;
+    
+    snakeBody.push_back({0, 0});
+    
 
-	CloseWindow();
+    Vector2 foodPosition = {
+        static_cast<float>(GetRandomValue(0, gridWidth - 1)),
+        static_cast<float>(GetRandomValue(0, gridHeight - 1))
+    };
+
+    while (!WindowShouldClose()) {
+        float deltaTime = GetFrameTime();
+
+        if (!gameOver) {
+            if (IsKeyPressed(KEY_UP) && snakeDirection != DOWN) 
+                nextDirection = UP;
+            if (IsKeyPressed(KEY_RIGHT) && snakeDirection != LEFT) 
+                nextDirection = RIGHT;
+            if (IsKeyPressed(KEY_DOWN) && snakeDirection != UP) 
+                nextDirection = DOWN;
+            if (IsKeyPressed(KEY_LEFT) && snakeDirection != RIGHT) 
+                nextDirection = LEFT;
+        } else {
+
+            if (IsKeyPressed(KEY_SPACE)) {
+                snakeBody.clear();
+                snakeBody.push_back({0, 0});
+                snakeDirection = RIGHT;
+                nextDirection = RIGHT;
+                shouldGrow = false;
+                gameOver = false;
+                score = 0;
+                moveTimer = 0.0f;
+
+                foodPosition = {
+                    static_cast<float>(GetRandomValue(0, gridWidth - 1)),
+                    static_cast<float>(GetRandomValue(0, gridHeight - 1))
+                };
+            }
+        }
+        if (!gameOver) {
+            moveTimer += deltaTime;
+
+            if (moveTimer >= moveInterval) {
+
+                moveTimer = 0.0f;
+
+                snakeDirection = nextDirection;
+
+                Vector2 newHead = snakeBody[0];
+                
+                switch (snakeDirection) {
+                    case UP: newHead.y--; break;
+                    case RIGHT: newHead.x++; break;
+                    case DOWN: newHead.y++; break;
+                    case LEFT: newHead.x--; break;
+                }
+                if (newHead.x < 0 || newHead.x >= gridWidth || 
+                    newHead.y < 0 || newHead.y >= gridHeight) {
+                    gameOver = true;
+                }
+                for (size_t i = 0; i < snakeBody.size(); i++) {
+                    if (newHead.x == snakeBody[i].x && newHead.y == snakeBody[i].y) {
+                        gameOver = true;
+                        break;
+                    }
+                }
+                if (!gameOver) {
+                    snakeBody.insert(snakeBody.begin(), newHead);
+
+                    if (newHead.x == foodPosition.x && newHead.y == foodPosition.y) {
+                        shouldGrow = true;
+                        score += 10;
+                        
+                        foodPosition = {
+                            static_cast<float>(GetRandomValue(0, gridWidth - 1)),
+                            static_cast<float>(GetRandomValue(0, gridHeight - 1))
+                        };
+                        
+                        bool foodOnSnake;
+                        do {
+                            foodOnSnake = false;
+                            for (const auto& segment : snakeBody) {
+                                if (foodPosition.x == segment.x && foodPosition.y == segment.y) {
+                                    foodOnSnake = true;
+                                    foodPosition = {
+                                        static_cast<float>(GetRandomValue(0, gridWidth - 1)),
+                                        static_cast<float>(GetRandomValue(0, gridHeight - 1))
+                                    };
+                                    break;
+                                }
+                            }
+                        } while (foodOnSnake);
+                    }
+                    if (!shouldGrow) {
+                        snakeBody.pop_back();
+                    } else {
+                        shouldGrow = false;
+                    }
+                }
+            }
+        }
+        BeginDrawing();
+
+        ClearBackground(BLACK);
+        
+        for (int i = 0; i < gridWidth; i++) {
+            for (int j = 0; j < gridHeight; j++) {
+                DrawRectangleLines(i * gridSize, j * gridSize, gridSize, gridSize, Color{50, 50, 50, 255});
+            }
+        }
+        
+        DrawRectangle(foodPosition.x * gridSize, foodPosition.y * gridSize, gridSize, gridSize, RED);
+        
+        for (size_t i = 0; i < snakeBody.size(); i++) {
+            Color segmentColor = (i == 0) ? GREEN : LIME;
+            DrawRectangle(snakeBody[i].x * gridSize, snakeBody[i].y * gridSize, 
+                         gridSize, gridSize, segmentColor);
+        }
+        
+        DrawText(TextFormat("Score: %d", score), 10, 10, 20, WHITE);
+        
+        if (gameOver) {
+            DrawRectangle(0, 0, screenWidth, screenHeight, Fade(BLACK, 0.5f));
+            DrawText("GAME OVER", screenWidth/2 - MeasureText("GAME OVER", 40)/2, 
+                    screenHeight/2 - 40, 40, RED);
+            DrawText("Press SPACE to restart", screenWidth/2 - MeasureText("Press SPACE to restart", 20)/2, 
+                    screenHeight/2 + 10, 20, WHITE);
+        }
+        
+        EndDrawing();
+    }
+    
+    CloseWindow();
+
+    return 0;
 }
