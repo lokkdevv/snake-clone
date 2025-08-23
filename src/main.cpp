@@ -1,6 +1,7 @@
 #include <raylib.h>
 #include <vector>
-#include <random>
+
+#include "../assets/eatSound.h"
 
 const int screenWidth = 800;
 const int screenHeight = 800;
@@ -13,8 +14,13 @@ const float moveInterval = 0.15f;
 enum Direction { UP, RIGHT, DOWN, LEFT };
 
 int main() {
+	InitAudioDevice();
     InitWindow(screenWidth, screenHeight, "Snake Game");
     SetTargetFPS(60);
+
+	//Sound eatSound = LoadSound("../assets/eatSound.wav");
+	Wave eatWave = LoadWaveFromMemory(".wav", eatSound, eatSound_size);
+	Sound eatSoundEffect = LoadSoundFromWave(eatWave);
 
     std::vector<Vector2> snakeBody;
 
@@ -102,6 +108,8 @@ int main() {
                         shouldGrow = true;
                         score += 10;
                         
+						PlaySound(eatSoundEffect);
+						
                         foodPosition = {
                             static_cast<float>(GetRandomValue(0, gridWidth - 1)),
                             static_cast<float>(GetRandomValue(0, gridHeight - 1))
@@ -161,7 +169,6 @@ int main() {
         EndDrawing();
     }
     
+	UnloadSound(eatSoundEffect);
     CloseWindow();
-
-    return 0;
 }
