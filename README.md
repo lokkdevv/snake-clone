@@ -7,7 +7,7 @@ A classic Snake game implementation using C++ and the Raylib library, featuring 
 ![License](https://img.shields.io/badge/License-MIT-yellow.svg)
 ![Platform](https://img.shields.io/badge/Platform-Windows-lightgrey.svg)
 
-![Gameplay Video](./gameplay-video.mp4)
+[![Gameplay Video](./gameplay-video.mp4)](https://github.com/lokkdevv/snake-game/blob/main/gameplay-video.mp4)
 
 ## Features
 
