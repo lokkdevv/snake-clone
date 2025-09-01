@@ -14,8 +14,9 @@ const float moveInterval = 0.15f;
 enum Direction { UP, RIGHT, DOWN, LEFT };
 
 int main() {
+	
+	InitWindow(screenWidth, screenHeight, "Snake Game");
 	InitAudioDevice();
-    InitWindow(screenWidth, screenHeight, "Snake Game");
     SetTargetFPS(60);
 
 	//Sound eatSound = LoadSound("../assets/eatSound.wav");
