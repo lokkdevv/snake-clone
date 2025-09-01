@@ -3,8 +3,8 @@
 
 #include "../assets/eatSound.h"
 
-const int screenWidth = 800;
-const int screenHeight = 800;
+const int screenWidth = 1920;
+const int screenHeight = 1080;
 const int gridSize = 32;
 const int gridWidth = screenWidth / gridSize;
 const int gridHeight = screenHeight / gridSize;
